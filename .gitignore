@@ -1,1 +1,4 @@
 debug.py
+debug_api.py
+debug.json
+*.pyc
