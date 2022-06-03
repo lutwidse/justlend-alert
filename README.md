@@ -17,5 +17,6 @@ Enter your wallet address in ENV_JUSTALERT_ADDR.
 Enter your Telegram bot token in ENV_JUSTALERT_TOKEN.
 
 ## References
+https://twitter.com/Lutwidse0xff/status/1532822929737916416
 https://www.youtube.com/watch?v=gb9e3m98avk  
 For Linux? Why ask me.
