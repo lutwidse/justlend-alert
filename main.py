@@ -53,7 +53,7 @@ class TeleBot:
 
     def risk_alert_set(self, update: Update, context: CallbackContext) -> None:
         chat_id = update.message.chat_id
-        job_removed = self.remove_job_if_exists(str(chat_id), context)
+        job_removed = self.remove_job_if_exists(str(chat_id) + "_just", context)
         context.job_queue.run_repeating(
             self.risk_alert,
             interval=60 * 5,
