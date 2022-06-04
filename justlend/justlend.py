@@ -54,5 +54,5 @@ class JustLend:
         It's equal to
         Total Borrow / (Total Supply * Collateral Factor)
         """
-        risk_value = round(borrow / (deposit * 0.85), 3)
+        risk_value = round(borrow / (deposit * 0.85), 4)
         return risk_value
