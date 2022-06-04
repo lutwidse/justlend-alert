@@ -34,7 +34,7 @@ class TeleBot:
         update.message.reply_text(text=HELP_TEXT)
 
     def risk_check(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text(self._just.get_risk_value())
+        update.message.reply_text(self._just.get_risk_value()*100)
 
     def risk_alert(self, context: CallbackContext) -> None:
         risk_diff = self.last_checked_risk_value - self._just.get_risk_value()
@@ -45,7 +45,7 @@ class TeleBot:
             context.bot.send_message(
                 job.context,
                 text="Risk Alert\n"
-                + f"[{self.last_checked_risk_value}] -> [{self._just.get_risk_value()}]"
+                + f"[{self.last_checked_risk_value*100}] -> [{self._just.get_risk_value()*100}]"
                 + "\n"
                 f"[diff]: {risk_diff}",
             )
