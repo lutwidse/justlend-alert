@@ -1,6 +1,6 @@
 import requests
 
-JUSTLEND_API = "https://labc.ablesdxd.link/justlend"
+JUSTLEND_API = "https://labc.ablesdxd.link/justlend/"
 
 # TODO : ラッパー / Wrapper
 
@@ -9,12 +9,12 @@ class JustLend:
     def __init__(self, addr):
         self._addr = addr
         self._yieldinfos = requests.get(
-            f"{JUSTLEND_API}/yieldInfos?addr={self._addr}"
+            f"{JUSTLEND_API}yieldInfos?addr={self._addr}"
         ).json()
 
     def update_yieldinfos(self):
         self._yieldinfos = requests.get(
-            f"{JUSTLEND_API}/yieldInfos?addr={self._addr}"
+            f"{JUSTLEND_API}yieldInfos?addr={self._addr}"
         ).json()
 
     # デバッグ用 / For debugging.
