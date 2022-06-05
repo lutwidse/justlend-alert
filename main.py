@@ -6,6 +6,7 @@ import time
 import os
 
 RISK_ALERT_THRESHOLD = 0.015
+RISK_ALERT_DIGIT = int(len(str(RISK_ALERT_THRESHOLD).replace(".", "")))
 
 HELP_TEXT = (
     "/risk_check - Get current Risk-value. \n"
@@ -33,12 +34,13 @@ class TeleBot:
     def help(self, update: Update, context: CallbackContext) -> None:
         update.message.reply_text(text=HELP_TEXT)
 
-    def risk_check(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text(self._just.get_risk_value()*100)
+    # Check risk value
+    def risk_check(self, update: Update, context: CallbackContext):
+        update.message.reply_text(f"{round(self._just.get_risk_value() * 100, RISK_ALERT_DIGIT)}%")
 
-    def risk_alert(self, context: CallbackContext) -> None:
-        risk_diff = self.last_checked_risk_value - self._just.get_risk_value()
-        risk_diff = round(risk_diff, len(str(RISK_ALERT_THRESHOLD).replace(".", "")))
+    def _risk_alert(self, context: CallbackContext):
+        diff = self._last_checked_risk_value - self._just.get_risk_value()
+        diff = round(diff, RISK_ALERT_DIGIT)
         # TODO: Calculate minus or plus
         if RISK_ALERT_THRESHOLD <= abs(risk_diff):
             job = context.job
