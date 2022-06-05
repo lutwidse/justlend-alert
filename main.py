@@ -14,7 +14,9 @@ USDD_CR_DIGIT = int(len(str(USDD_CR_THRESHOLD).replace(".", "")))
 
 HELP_TEXT = (
     "/risk_check - Get current Risk-value. \n"
-    "/risk_alert_set - Set|Unset /risk_check notification if risk ups than the threshold. \n"
+    "/risk_alert - Set|Unset /risk_check notification if risk moves than the threshold. \n"
+    "/usdd_cr_check - Get current USDD collateralization ratio. \n"
+    "/usdd_cr_alert - Set|Unset /usdd_cr_check notification if CR moves than the threshold. \n"
 )
 
 
@@ -77,7 +79,7 @@ class TeleBot:
             )
             update.message.reply_text("Risk alert has been set.")
 
-    # Check collateralization ratio of USDD
+    # Check USDD collateralization ratio.
     def usdd_cr_check(self, update: Update, context: CallbackContext):
         update.message.reply_text(f"{round(self._tdr.get_collateralization_ratio() * 100, USDD_CR_DIGIT)}%")
 
