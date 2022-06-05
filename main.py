@@ -53,14 +53,23 @@ class TeleBot:
             )
             self.last_checked_risk_value = self._just.get_risk_value()
 
-    def risk_alert_set(self, update: Update, context: CallbackContext) -> None:
+    def risk_alert_set(self, update: Update, context: CallbackContext):
         chat_id = update.message.chat_id
-        job_removed = self.remove_job_if_exists(str(chat_id) + "_just", context)
-        context.job_queue.run_repeating(
-            self.risk_alert,
-            interval=60 * 5,
-            context=chat_id,
-            name=str(chat_id) + "_just",
+        job_removed = self.remove_job_if_exists(
+            str(chat_id) + "_risk_alert_set", context
+        )
+
+        if job_removed:
+            update.message.reply_text("Risk alert has been removed.")
+        else:
+            self._last_checked_risk_value = self._just.get_risk_value()
+            context.job_queue.run_repeating(
+                self._risk_alert,
+                interval=60 * 60,
+                context=chat_id,
+                name=str(chat_id) + "_risk_alert_set",
+            )
+            update.message.reply_text("Risk alert has been set.")
         )
 
         if job_removed:
@@ -84,8 +93,10 @@ if __name__ == "__main__":
     updater = Updater(os.environ["ENV_JUSTALERT_TOKEN"])
     updater.dispatcher.add_handler(CommandHandler("start", bot.start))
     updater.dispatcher.add_handler(CommandHandler("help", bot.help))
+
     updater.dispatcher.add_handler(CommandHandler("risk_check", bot.risk_check))
-    updater.dispatcher.add_handler(CommandHandler("risk_alert_set", bot.risk_alert_set))
+    updater.dispatcher.add_handler(CommandHandler("risk_alert", bot.risk_alert_set))
+
     updater.dispatcher.add_handler(
         CommandHandler("risk_alert_unset", bot.risk_alert_unset)
     )
