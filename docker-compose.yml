@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  whale_sniper:
+    container_name: justlend-alert
+    build:
+      context: .
+      dockerfile: ./dockerfile
+    environment:
+       - ENV_JUSTALERT_ADDR=${ENV_JUSTALERT_ADDR}
+       - ENV_JUSTALERT_TOKEN=${ENV_JUSTALERT_TOKEN}
+    restart: always
+    tty: true
