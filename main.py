@@ -94,9 +94,9 @@ class TeleBot:
             context.bot.send_message(
                 job.context,
                 text="USDD CR Alert\n"
-                + f"[{self._last_checked_usdd_cr_value*100}%] -> [{self._tdr.get_collateralization_ratio()*100}%]"
+                + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
                 + "\n"
-                f"[diff]: {diff}",
+                f"[diff]: f"{round(diff*100, USDD_CR_DIGIT)}%",
             )
             self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
 
