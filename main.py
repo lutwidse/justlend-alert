@@ -57,7 +57,7 @@ class TeleBot:
                 text="Risk Alert\n"
                 + f"[{self._last_checked_risk_value*100}%] -> [{self._just.get_risk_value()*100}%]"
                 + "\n"
-                f"[diff]: {diff}",
+                f"[Risk Moved]: {diff}",
             )
             self._last_checked_risk_value = self._just.get_risk_value()
 
@@ -93,11 +93,9 @@ class TeleBot:
             job = context.job
             context.bot.send_message(
                 job.context,
-                text="USDD CR Alert\n"
-                + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
-                + "\n"
-                f"[diff]: f"{round(diff*100, USDD_CR_DIGIT)}%",
-            )
+                text="USDD CR Alert\n" + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
+                +"\n"
+                + f"{round(diff*100), USDD_CR_DIGIT}%")
             self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
 
     def usdd_cr_alert_set(self, update: Update, context: CallbackContext):
