@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  whale_sniper:
+  justlend_alert:
     container_name: justlend-alert
     build:
       context: .
