@@ -17,6 +17,8 @@ HELP_TEXT = (
     "/risk_alert - Set|Unset /risk_check notification if risk moves than the threshold. \n"
     "/usdd_cr_check - Get current USDD collateralization ratio. \n"
     "/usdd_cr_alert - Set|Unset /usdd_cr_check notification if CR moves than the threshold. \n"
+    "/usdd_actual_cr_check \n"
+    "/usdd_actual_cr_alert"
 )
 
 
@@ -27,6 +29,7 @@ class TeleBot:
 
         self._last_checked_risk_value = self._just.get_risk_value()
         self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
+        self._last_checked_usdd_actual_cr_value = self._tdr.get_actual_cr()
 
     def remove_job_if_exists(self, name: str, context: CallbackContext) -> bool:
         current_jobs = context.job_queue.get_jobs_by_name(name)
@@ -44,7 +47,9 @@ class TeleBot:
 
     # Check risk value
     def risk_check(self, update: Update, context: CallbackContext):
-        update.message.reply_text(f"{round(self._just.get_risk_value() * 100, RISK_ALERT_DIGIT)}%")
+        update.message.reply_text(
+            f"{round(self._just.get_risk_value() * 100, RISK_ALERT_DIGIT)}%"
+        )
 
     def _risk_alert(self, context: CallbackContext):
         diff = self._last_checked_risk_value - self._just.get_risk_value()
@@ -81,7 +86,9 @@ class TeleBot:
 
     # Check USDD collateralization ratio.
     def usdd_cr_check(self, update: Update, context: CallbackContext):
-        update.message.reply_text(f"{round(self._tdr.get_collateralization_ratio() * 100, USDD_CR_DIGIT)}%")
+        update.message.reply_text(
+            f"{round(self._tdr.get_collateralization_ratio() * 100, USDD_CR_DIGIT)}%"
+        )
 
     def _usdd_cr_alert(self, context: CallbackContext):
         diff = (
@@ -93,9 +100,11 @@ class TeleBot:
             job = context.job
             context.bot.send_message(
                 job.context,
-                text="USDD CR Alert\n" + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
-                +"\n"
-                + f"{round(diff*100), USDD_CR_DIGIT}%")
+                text="USDD CR Alert\n"
+                + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
+                + "\n"
+                + f"{round(diff*100), USDD_CR_DIGIT}%",
+            )
             self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
 
     def usdd_cr_alert_set(self, update: Update, context: CallbackContext):
@@ -116,6 +125,42 @@ class TeleBot:
             )
             update.message.reply_text("USDD CR alert has been set.")
 
+    # Check actual USDD CR.
+    def usdd_actual_cr_check(self, update: Update, context: CallbackContext):
+        update.message.reply_text(f"{round(self._tdr.get_actual_cr() * 100)}%")
+
+    def _usdd_actual_cr_alert(self, update: Update, context: CallbackContext):
+        if self._last_checked_usdd_actual_cr_value < 100:
+            job = context.job
+            context.bot.send_message(
+                job.context,
+                text="USDD Actual CR Alert\n" + f"[{self._tdr.get_actual_cr() * 100}%]",
+            )
+            self._last_checked_usdd_cr_value = self._tdr.get_actual_cr()
+
+            chat_id = update.message.chat_id
+            self.remove_job_if_exists(
+                str(chat_id) + "_usdd_actual_cr_alert_set", context
+            )
+            update.message.reply_text("USDD Actual CR alert has been removed.")
+
+    def usdd_actual_cr_alert_set(self, update: Update, context: CallbackContext):
+        chat_id = update.message.chat_id
+        job_removed = self.remove_job_if_exists(
+            str(chat_id) + "_usdd_actual_cr_alert_set", context
+        )
+
+        if job_removed:
+            update.message.reply_text("USDD Actual CR alert has been removed.")
+        else:
+            context.job_queue.run_repeating(
+                self._usdd_cr_alert,
+                interval=5,
+                context=chat_id,
+                name=str(chat_id) + "_usdd_actual_cr_alert_set",
+            )
+            update.message.reply_text("USDD Actual CR alert has been set.")
+
 
 if __name__ == "__main__":
     # Wallet Address
@@ -132,6 +177,13 @@ if __name__ == "__main__":
     updater.dispatcher.add_handler(CommandHandler("usdd_cr_check", bot.usdd_cr_check))
     updater.dispatcher.add_handler(
         CommandHandler("usdd_cr_alert", bot.usdd_cr_alert_set)
+    )
+
+    updater.dispatcher.add_handler(
+        CommandHandler("usdd_actual_cr_check", bot.usdd_actual_cr_check)
+    )
+    updater.dispatcher.add_handler(
+        CommandHandler("usdd_actual_cr_alert", bot.usdd_actual_cr_alert_set)
     )
 
     updater.start_polling()
