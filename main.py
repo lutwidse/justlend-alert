@@ -6,11 +6,15 @@ import schedule
 import time
 import os
 
+ALERT_MINUTES = 60 * 10
+
 RISK_ALERT_THRESHOLD = 0.015
 USDD_CR_THRESHOLD = 0.1
+USDD_ACTUAL_CR_THRESHOLD = 0.1
 
 RISK_ALERT_DIGIT = int(len(str(RISK_ALERT_THRESHOLD).replace(".", "")))
 USDD_CR_DIGIT = int(len(str(USDD_CR_THRESHOLD).replace(".", "")))
+USDD_ACTUAL_CR_DIGIT = int(len(str(USDD_ACTUAL_CR_THRESHOLD).replace(".", "")))
 
 HELP_TEXT = (
     "/risk_check - Get current Risk-value. \n"
@@ -29,6 +33,7 @@ class TeleBot:
 
         self._last_checked_risk_value = self._just.get_risk_value()
         self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
+        self._last_checked_actual_usdd_cr_value = self._tdr.get_actual_cr()
 
     def remove_job_if_exists(self, name: str, context: CallbackContext) -> bool:
         current_jobs = context.job_queue.get_jobs_by_name(name)
@@ -61,7 +66,7 @@ class TeleBot:
                 text="Risk Alert\n"
                 + f"[{self._last_checked_risk_value*100}%] -> [{self._just.get_risk_value()*100}%]"
                 + "\n"
-                f"[Risk Moved]: {diff}",
+                f"[Risk Moved]: {diff*100}%",
             )
             self._last_checked_risk_value = self._just.get_risk_value()
 
@@ -102,7 +107,7 @@ class TeleBot:
                 text="USDD CR Alert\n"
                 + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
                 + "\n"
-                + f"{round(diff*100, USDD_CR_DIGIT)}%",
+                + f"[CR Moved]: {diff*100}%",
             )
             self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
 
@@ -129,13 +134,19 @@ class TeleBot:
         update.message.reply_text(f"{round(self._tdr.get_actual_cr() * 100)}%")
 
     def _usdd_actual_cr_alert(self, context: CallbackContext):
-        if float(self._tdr.get_actual_cr()) < 1.00:
+        diff = self._last_checked_actual_usdd_cr_value - self._tdr.get_actual_cr()
+        diff = round(diff, USDD_ACTUAL_CR_DIGIT)
+        # TODO: Calculate minus or plus
+        if USDD_ACTUAL_CR_THRESHOLD <= abs(diff):
             job = context.job
             context.bot.send_message(
                 job.context,
-                text="USDD Actual CR Alert\n" + f"[{self._tdr.get_actual_cr() * 100}%]",
+                text="USDD Actual CR Alert\n"
+                + f"[{self._last_checked_actual_usdd_cr_value*100}%] -> [{self._tdr.get_actual_cr()*100}%]"
+                + "\n"
+                f"[Actual CR Moved]: {diff*100}%",
             )
-            self._last_checked_usdd_cr_value = self._tdr.get_actual_cr()
+            self._last_checked_actual_usdd_cr_value = self._tdr.get_actual_cr()
 
     def usdd_actual_cr_alert_set(self, update: Update, context: CallbackContext):
         chat_id = update.message.chat_id
