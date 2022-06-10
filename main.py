@@ -129,7 +129,7 @@ class TeleBot:
         update.message.reply_text(f"{round(self._tdr.get_actual_cr() * 100)}%")
 
     def _usdd_actual_cr_alert(self, context: CallbackContext):
-        if self._tdr.get_actual_cr() < 1:
+        if float(self._tdr.get_actual_cr()) < 1.00:
             job = context.job
             context.bot.send_message(
                 job.context,
