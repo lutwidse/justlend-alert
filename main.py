@@ -29,7 +29,6 @@ class TeleBot:
 
         self._last_checked_risk_value = self._just.get_risk_value()
         self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
-        self._last_checked_usdd_actual_cr_value = self._tdr.get_actual_cr()
 
     def remove_job_if_exists(self, name: str, context: CallbackContext) -> bool:
         current_jobs = context.job_queue.get_jobs_by_name(name)
@@ -119,7 +118,7 @@ class TeleBot:
             self._last_checked_risk_value = self._just.get_risk_value()
             context.job_queue.run_repeating(
                 self._usdd_cr_alert,
-                interval=60*30,
+                interval=60 * 30,
                 context=chat_id,
                 name=str(chat_id) + "_usdd_cr_alert_set",
             )
@@ -129,20 +128,14 @@ class TeleBot:
     def usdd_actual_cr_check(self, update: Update, context: CallbackContext):
         update.message.reply_text(f"{round(self._tdr.get_actual_cr() * 100)}%")
 
-    def _usdd_actual_cr_alert(self, update: Update, context: CallbackContext):
-        if self._last_checked_usdd_actual_cr_value < 100:
+    def _usdd_actual_cr_alert(self, context: CallbackContext):
+        if self._tdr.get_actual_cr() < 100:
             job = context.job
             context.bot.send_message(
                 job.context,
                 text="USDD Actual CR Alert\n" + f"[{self._tdr.get_actual_cr() * 100}%]",
             )
             self._last_checked_usdd_cr_value = self._tdr.get_actual_cr()
-
-            chat_id = update.message.chat_id
-            self.remove_job_if_exists(
-                str(chat_id) + "_usdd_actual_cr_alert_set", context
-            )
-            update.message.reply_text("USDD Actual CR alert has been removed.")
 
     def usdd_actual_cr_alert_set(self, update: Update, context: CallbackContext):
         chat_id = update.message.chat_id
@@ -154,8 +147,8 @@ class TeleBot:
             update.message.reply_text("USDD Actual CR alert has been removed.")
         else:
             context.job_queue.run_repeating(
-                self._usdd_cr_alert,
-                interval=60*30,
+                self._usdd_actual_cr_alert,
+                interval=60 * 30,
                 context=chat_id,
                 name=str(chat_id) + "_usdd_actual_cr_alert_set",
             )
