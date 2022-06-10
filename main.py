@@ -102,7 +102,7 @@ class TeleBot:
                 text="USDD CR Alert\n"
                 + f"[{round(self._last_checked_usdd_cr_value*100, USDD_CR_DIGIT)}%] -> [{round(self._tdr.get_collateralization_ratio()*100, USDD_CR_DIGIT)}%]"
                 + "\n"
-                + f"{round(diff*100), USDD_CR_DIGIT}%",
+                + f"{round(diff*100, USDD_CR_DIGIT)}%",
             )
             self._last_checked_usdd_cr_value = self._tdr.get_collateralization_ratio()
 
