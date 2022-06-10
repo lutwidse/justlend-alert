@@ -1,4 +1,5 @@
 import requests
+import re
 
 JUSTLEND_API = "https://labc.ablesdxd.link/justlend/"
 
@@ -33,21 +34,31 @@ class JustLend:
                     # 預入
                     if "account_depositJtoken" in asset:
                         if int(asset["account_depositJtoken"]) > 0:
-                            deposit = int(asset["account_depositJtoken"]) / 10**10
-                            exchange_rate = asset["exchangeRate"] / 10**26
-                            fixed_deposit = float(deposit) * exchange_rate
+                            decimal = int(asset["jtokenDecimal"])+2 # ???
+                            deposit = int(asset["account_depositJtoken"]) / 10**decimal
+                            exchange_rate = asset["exchangeRate"]
+                            if "e" in str(exchange_rate):
+                                exchange_rate = exchange_rate * re.search(r"[^/e+{2}]+", str(exchange_rate)).group(0)
+                            else:
+                                exchange_rate = int(str(exchange_rate)[:7])
+                                exchange_rate = exchange_rate / 10 ** (len(str(exchange_rate))-1)
+                            fixed_deposit += (float(deposit) * exchange_rate)
                     # 借入
                     if "account_borrowBalance" in asset:
                         if int(asset["account_borrowBalance"]) > 0:
-                            borrow = int(asset["account_borrowBalance"]) / 10**18
-                            exchange_rate = asset["exchangeRate"] / 10**26
-                            fixed_borrow = float(borrow) * exchange_rate
+                            decimal = int(asset["collateralDecimal"])
+                            borrow = int(asset["account_borrowBalance"]) / 10**decimal
+                            exchange_rate = asset["exchangeRate"]
+                            if "e" in str(exchange_rate):
+                                exchange_rate = exchange_rate * re.search(r"[^/e+{2}]+", str(exchange_rate)).group(0)
+                            else:
+                                exchange_rate = int(str(exchange_rate)[:7])
+                                exchange_rate = exchange_rate / 10 ** (len(str(exchange_rate))-1)
+                            fixed_borrow += (float(borrow) * exchange_rate)
         else:
             return fixed_deposit, fixed_borrow
 
     def get_risk_value(self) -> float:
-        self.update_yieldinfos()
-
         deposit, borrow = self.get_deposit_and_borrow()
         """
         Total Borrow / Borrow Limit * 100
