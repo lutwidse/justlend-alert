@@ -119,7 +119,7 @@ class TeleBot:
             self._last_checked_risk_value = self._just.get_risk_value()
             context.job_queue.run_repeating(
                 self._usdd_cr_alert,
-                interval=5,
+                interval=60*30,
                 context=chat_id,
                 name=str(chat_id) + "_usdd_cr_alert_set",
             )
@@ -155,7 +155,7 @@ class TeleBot:
         else:
             context.job_queue.run_repeating(
                 self._usdd_cr_alert,
-                interval=5,
+                interval=60*30,
                 context=chat_id,
                 name=str(chat_id) + "_usdd_actual_cr_alert_set",
             )
