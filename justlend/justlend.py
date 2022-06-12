@@ -60,6 +60,8 @@ class JustLend:
 
     def get_risk_value(self) -> float:
         deposit, borrow = self.get_deposit_and_borrow()
+        if borrow <= 0:
+            return 0.000
         """
         Total Borrow / Borrow Limit * 100
         It's equal to
